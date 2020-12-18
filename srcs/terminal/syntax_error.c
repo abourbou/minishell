@@ -6,7 +6,7 @@
 /*   By: abourbou <abourbou@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/12/02 15:02:57 by abourbou          #+#    #+#             */
-/*   Updated: 2020/12/17 16:44:41 by abourbou         ###   ########lyon.fr   */
+/*   Updated: 2020/12/18 14:29:31 by abourbou         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,35 +15,19 @@
 #include "syntax_error.h"
 
 /*
-** Check si la ligne est vide
-** Return [int] 1 - Success
-** Return [int] 0 - Failed
-*/
-
-static int	check_empty_line(char *input)
-{
-	int i;
-
-	i = 0;
-	while (input[i] == ' ' || input[i] == '\t')
-		i++;
-	if (!input[i])
-		return (1);
-	return (0);
-}
-
-/*
 ** Verifie le dernier caractère et agis en fonction.
 ** Return [char] 3 - Error, call new command
 ** Return [char] 2 - Call new line
 ** Return [char] 0 - To execute
 */
 
-static char	check_end_line(char *input, int type, int flagantislash)
+static char		check_end_line(char *input, int type, int flagantislash)
 {
 	int i;
 
-	if (flagantislash)
+	if (is_end_escaped(input))
+		return (TO_EXECUTE);
+	else if (flagantislash)
 		return (NEW_LINE);
 	else if (type == OPERAT)
 	{
@@ -62,6 +46,17 @@ static char	check_end_line(char *input, int type, int flagantislash)
 	return (TO_EXECUTE);
 }
 
+static short	handle_doperator(char *input, int *i, int old_type, int *type)
+{
+	old_type = *type;
+	*type = (!ft_strncmp(">>", input + *i, 2)) ? REDIRECT : OPERAT;
+	if ((*type == OPERAT && old_type == OPERAT) ||
+		(*type == REDIRECT && old_type == REDIRECT))
+		return (NCMD_SYNTAX_ERROR);
+	*i += 2;
+	return (-1);
+}
+
 /*
 ** first set of conditions, check parenthesis and operators with 2 char
 ** return -1 if found the condition but no error
@@ -69,32 +64,29 @@ static char	check_end_line(char *input, int type, int flagantislash)
 ** return >0 if it needs to return
 */
 
-short		condition_synt_err1(char *input, int *i, int *type)
+short			condition_synt_err1(char *input, int *i, int *type)
 {
 	short	return_value;
-	int		old_type;
 
-	if (input[*i] == ')')
+	if (input[*i] == '\\')
+	{
+		if (*type == PARENTH)
+			return (NCMD_SYNTAX_ERROR);
+		*type = WORD;
+		*i += (input[*i + 1]) ? 2 : 1;
+		return (-1);
+	}
+	else if (input[*i] == ')')
 		return (NCMD_SYNTAX_ERROR);
 	else if (input[*i] == '(')
 	{
-		if ((return_value = syntax_parenth(input + *i, *type, i)))
+		if ((return_value = syntax_parenth(input + *i, *type, i, 1)))
 			return (return_value);
 		*type = PARENTH;
 		return (-1);
 	}
-	else if (!ft_strncmp(">>", input + *i, 2)
-			|| !ft_strncmp("&&", input + *i, 2)
-			|| !ft_strncmp("||", input + *i, 2))
-	{
-		old_type = *type;
-		*type = (!ft_strncmp(">>", input + *i, 2)) ? REDIRECT : OPERAT;
-		if ((*type == OPERAT && old_type == OPERAT) ||
-			(*type == REDIRECT && old_type == REDIRECT))
-			return (NCMD_SYNTAX_ERROR);
-		*i += 2;
-		return (-1);
-	}
+	else if (is_operator(input, i))
+		return (handle_doperator(input, i, 0, type));
 	return (0);
 }
 
@@ -105,7 +97,8 @@ short		condition_synt_err1(char *input, int *i, int *type)
 ** return >0 if it needs to return
 */
 
-short		condition_synt_err2(char *input, int *i, int *type, int old_type)
+short			condition_synt_err2(char *input, int *i, int *type,
+													int old_type)
 {
 	if (ft_memchr("<>|;", input[*i], 4))
 	{
@@ -144,7 +137,7 @@ short		condition_synt_err2(char *input, int *i, int *type, int old_type)
 ** Type : 0 Word, 1 Operator, 2 Parenthesis, 3 redirection
 */
 
-short		syntax_error(char *input, int flagantislash)
+short			syntax_error(char *input, int flagantislash)
 {
 	int		i;
 	int		type;

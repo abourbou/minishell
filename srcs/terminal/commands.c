@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   commands.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dgascon <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: nlecaill <nlecaill@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/12/18 09:39:14 by dgascon           #+#    #+#             */
-/*   Updated: 2020/12/18 09:39:15 by dgascon          ###   ########lyon.fr   */
+/*   Updated: 2020/12/18 15:57:29 by nlecaill         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,9 +59,10 @@ static int	new_cmd_2(t_term *term, t_block *copy, int sig, int ret_handle)
 {
 	if (tcsetattr(0, 0, &term->termios) == -1)
 		return (EXIT_FAILURE);
-	if (g_interrupt)
+	if (g_interrupt && g_passed && g_exit_status != 0)
 		ft_printf("\n");
-	ft_printf("$ ");
+	ft_printf("\033[%dm$ \033[0m", term->colors[term->color]);
+	(term->color == NB_COLORS - 1 ? term->color = 0 : term->color++);
 	get_pos();
 	if (clear_new_cmd(term, copy, sig, ret_handle))
 		return (EXIT_FAILURE);
@@ -94,7 +95,7 @@ int			new_cmd(t_term *term, int sig, int ret_handle)
 		exec_cmd(term->str_ccmd);
 	else if (ret_handle == NCMD_SYNTAX_ERROR)
 	{
-		ft_printf("minishell: syntax error\n");
+		ft_printf("minishell: \033[%dmsyntax error\n\033[0m", ERROR_COLOR);
 		g_exit_status = 2;
 	}
 	if (new_cmd_2(term, copy, sig, ret_handle))
@@ -127,7 +128,8 @@ int			ft_newline(t_term *term)
 	ft_hashadd_back(&(term->list_blocks), hash);
 	term->ndx_line++;
 	term->cursor_pos = PROMPT_SIZE;
-	ft_printf("\n> ");
+	ft_printf("\033[%dm\n> \033[0m", term->colors[term->color]);
+	(term->color == NB_COLORS - 1 ? term->color = 0 : term->color++);
 	term->current_block = hash;
 	term->ndx_cursor = 0;
 	return (PROCESS_SUCCESS);

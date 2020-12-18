@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dgascon <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: nlecaill <nlecaill@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/12/18 09:39:17 by dgascon           #+#    #+#             */
-/*   Updated: 2020/12/18 09:39:19 by dgascon          ###   ########lyon.fr   */
+/*   Updated: 2020/12/18 15:52:30 by nlecaill         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,22 @@
  ** Initialise les variables de la structure du terminal
  ** Return [int] Status de reussite
 */
+
+static void	init_colors(t_term *term)
+{
+	term->colors[0] = 32;
+	term->colors[1] = 33;
+	term->colors[2] = 34;
+	term->colors[3] = 35;
+	term->colors[4] = 36;
+	term->colors[5] = 90;
+	term->colors[6] = 92;
+	term->colors[7] = 93;
+	term->colors[8] = 94;
+	term->colors[9] = 95;
+	term->colors[10] = 96;
+	term->color = 0;
+}
 
 static int	init_term_variables(t_termios *termios)
 {
@@ -44,6 +60,7 @@ static int	init_term_variables(t_termios *termios)
 	term->esc_flag = 0;
 	term->str_ccmd = 0;
 	term->termios_backup = *termios;
+	init_colors(term);
 	return (EXIT_SUCCESS);
 }
 

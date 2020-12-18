@@ -6,7 +6,7 @@
 /*   By: lrobino <lrobino@student.42lyon.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/10/16 15:11:41 by lrobino           #+#    #+#             */
-/*   Updated: 2020/12/17 11:26:09 by lrobino          ###   ########lyon.fr   */
+/*   Updated: 2020/12/18 16:13:02 by lrobino          ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,5 +85,5 @@ void			print_not_found(char *file)
 		"minishell: %s: No such file or directory.\n", file);
 	else
 		ft_fprintf(STDERR_FILENO,
-		"minishell: %s: command not found.\n", file);
+		"minishell: %s: Command not found.\n", file);
 }
